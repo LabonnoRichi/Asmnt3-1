@@ -19,9 +19,11 @@
   <script>
     const canvas = document.getElementById('mazeCanvas');
     const ctx = canvas.getContext('2d');
-    const cellSize = 10; //change from 20 (make it variable with each level)
-    const rows = canvas.width / cellSize;
-    const cols = canvas.height / cellSize;
+    const cellSize = 10; //initial cell size
+    //const rows = canvas.width / cellSize;
+    //const cols = canvas.height / cellSize;
+    let level =1;
+    let rows, cols;
     //let maze = createMaze(rows, cols);
 
     let maze, holeX, holeY //new 
@@ -41,6 +43,9 @@
     //this functio didnt code for new maze generation
     function resetGame() 
     {
+      rows = Math.floor(canvas.width / cellSize);
+      cols = Math.floor(canvas.height / cellSize);
+      ballSize = cellSize / 4;
       maze = createMaze(rows, cols);
       ballX = 0.5;
       ballY = 0.5;
@@ -48,6 +53,7 @@
       placeHole();
       //uncomment later to see if generates random maze
       //edges = shuffle(edges);
+      updateLevelCounter();
     }
 
     
@@ -125,7 +131,7 @@
 
       // Draw the ball
       ctx.fillStyle = 'red';
-      ctx.lineWidth = 1.5;
+      //ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.arc(ballX * cellSize, ballY * cellSize, ballSize, 0, Math.PI * 2);
       ctx.fill();
@@ -145,7 +151,7 @@
           ctx.stroke();
         }
       }
-
+        //hole
       ctx.fillStyle = 'blue';
       ctx.beginPath();
       ctx.arc(holeX * cellSize + cellSize / 2, holeY * cellSize + cellSize / 2, ballSize, 0, Math.PI * 2);
@@ -168,10 +174,12 @@
       let newBallX = ballX + ballVelX;
       let newBallY = ballY + ballVelY;
 
-      let x = 0;
-      let y = 0;
+      //let x = 0;
+      //let y = 0;
+      let x = ballVelX > 0 ? ballSize / cellSize : -ballSize / cellSize;
+      let y = ballVelY > 0 ? ballSize / cellSize : -ballSize / cellSize;
 
-      if (ballVelX > 0) {
+      /*if (ballVelX > 0) {
         x = ballSize / cellSize;
       } else if (ballVelX < 0) {
         x = -ballSize / cellSize;
@@ -181,7 +189,7 @@
         y = ballSize / cellSize;
       } else if (ballVelY < 0) {
         y = -ballSize / cellSize;
-      }
+      }*/
 
       // Check for collisions with walls
       let currentCellX = Math.floor(ballX);
@@ -214,10 +222,18 @@
 
       // Check if the ball has reached the hole
       if (Math.floor(ballX) === holeX && Math.floor(ballY) === holeY) {
+        level++;
+        cellSize*=0.95;
         resetGame(); // Generate new maze and hole
       }
       
       drawMaze(maze);
+    }
+
+    function updateLevelCounter()
+    {
+      const levelCounter = document.getElementById('levelCounter');
+      levelCounter.textContent = `Level: ${level}`;
     }
 
     // Event listener for arrow key presses
