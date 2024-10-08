@@ -19,16 +19,17 @@
   <script>
     const canvas = document.getElementById('mazeCanvas');
     const ctx = canvas.getContext('2d');
-    /*const*/let cellSize = 10; //initial cell size
+    /*const*/
+    let cellSize = 10; //initial cell size
     //const rows = canvas.width / cellSize;
     //const cols = canvas.height / cellSize;
     let level =1;
     //let rows, cols;
     let rows = canvas.width / cellSize;
     let cols = canvas.height / cellSize;
-    let maze = createMaze(rows, cols); //uncommented
+    //let maze = createMaze(rows, cols); //uncommented
 
-    let /*maze,*/ holeX, holeY //new  commented maze
+    let maze, holeX, holeY, ballSize //new  commented maze
 
     // Ball variables
     let ballX = 0.5;
@@ -36,7 +37,7 @@
     let ballVelX = 0;
     let ballVelY = 0;
     //const ballSize = cellSize / 4; // Radius of the ball
-    let ballSize = cellSize / 4;
+    //let ballSize = cellSize / 4;
 
     const acceleration = 0.005;
     const maxSpeed = 0.25;
@@ -50,7 +51,7 @@
       //drawMaze(maze);
       rows = Math.floor(canvas.width / cellSize);
       cols = Math.floor(canvas.height / cellSize);
-      //ballSize = cellSize / 4;
+      ballSize = cellSize / 4;
       maze = createMaze(rows, cols);
       ballX = 0.5;
       ballY = 0.5;
