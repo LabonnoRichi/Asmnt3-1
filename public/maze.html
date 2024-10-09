@@ -38,6 +38,7 @@
   </div>
 
   <canvas id="mazeCanvas" width="400" height="400"></canvas>
+  <script src="/socket.io/socket.io.js"></script>
   <script>
     const canvas = document.getElementById('mazeCanvas');
     const ctx = canvas.getContext('2d');
@@ -278,7 +279,6 @@ canvas.style.display = 'none'; // Hide the canvas initially
     }
 
   // Place hole at random, reachable location in maze
-  //See how reachable is implemented
     function placeHole() {
       do {
         holeX = Math.floor(Math.random() * rows);
@@ -346,6 +346,8 @@ canvas.style.display = 'none'; // Hide the canvas initially
       drawMaze(maze);
     }
 
+
+    //changes level display
     function updateLevelDisplay() {
       levelElement.textContent = `Level: ${level}`};
 
@@ -409,6 +411,122 @@ canvas.style.display = 'none'; // Hide the canvas initially
       updateBallPosition();
       requestAnimationFrame(gameLoop);
     }
+
+    <!-- Add Socket.IO client script -->
+
+///////////////////copied here///////////////////////////////
+
+  const socket = new WebSocket('wss://asmnt3-testing1.onrender.com');
+
+  // Function to handle receiving the initial game state from the server
+  socket.on('initialState', (state) => {
+    gameState = state;
+    ballX = state.ballX;
+    ballY = state.ballY;
+    ballVelX = state.ballVelX;
+    ballVelY = state.ballVelY;
+    holeX = state.holeX;
+    holeY = state.holeY;
+    level = state.level;
+    timeLeft = state.timeLeft;
+    maze = state.maze;
+    drawMaze(maze); // Draw the maze with the updated state
+  });
+
+  // Function to handle game state updates from the server
+  socket.on('updateState', (state) => {
+    gameState = state;
+    ballX = state.ballX;
+    ballY = state.ballY;
+    ballVelX = state.ballVelX;
+    ballVelY = state.ballVelY;
+    holeX = state.holeX;
+    holeY = state.holeY;
+    level = state.level;
+    timeLeft = state.timeLeft;
+    maze = state.maze;
+    drawMaze(maze); // Draw the maze with the updated state
+  });
+
+  // Send updated game state to the server
+  function sendGameState() {
+    const gameState = {
+      ballX,
+      ballY,
+      ballVelX,
+      ballVelY,
+      holeX,
+      holeY,
+      level,
+      timeLeft,
+      maze,
+    };
+    socket.emit('updateState', gameState);
+  }
+
+  // Override the updateBallPosition function to send the updated game state to the server
+  function updateBallPosition() {
+    let newBallX = ballX + ballVelX;
+    let newBallY = ballY + ballVelY;
+
+    let x = 0;
+    let y = 0;
+
+    if (ballVelX > 0) {
+      x = ballSize / cellSize;
+    } else if (ballVelX < 0) {
+      x = -ballSize / cellSize;
+    }
+
+    if (ballVelY > 0) {
+      y = ballSize / cellSize;
+    } else if (ballVelY < 0) {
+      y = -ballSize / cellSize;
+    }
+
+    // Check for collisions with walls
+    let currentCellX = Math.floor(ballX);
+    let currentCellY = Math.floor(ballY);
+    let nextCellX = Math.floor(newBallX + x);
+    let nextCellY = Math.floor(newBallY + y);
+
+    if (currentCellX !== nextCellX) {
+      if (ballVelX > 0 && maze[currentCellY][currentCellX].east) {
+        newBallX = currentCellX + 1 - ballSize / cellSize;
+        ballVelX = 0;
+      } else if (ballVelX < 0 && maze[currentCellY][currentCellX].west) {
+        newBallX = currentCellX + ballSize / cellSize;
+        ballVelX = 0;
+      }
+    }
+
+    if (currentCellY !== nextCellY) {
+      if (ballVelY > 0 && maze[currentCellY][currentCellX].south) {
+        newBallY = currentCellY + 1 - ballSize / cellSize;
+        ballVelY = 0;
+      } else if (ballVelY < 0 && maze[currentCellY][currentCellX].north) {
+        newBallY = currentCellY + ballSize / cellSize;
+        ballVelY = 0;
+      }
+    }
+
+    ballX = newBallX;
+    ballY = newBallY;
+
+    // Check if the ball has reached the hole
+    if (Math.floor(ballX) === holeX && Math.floor(ballY) === holeY && !isGameOver) {
+      level++;
+      resetGame(); // Generate new maze and hole
+      updateLevelDisplay();
+    }
+
+    drawMaze(maze);
+
+    // Send updated game state to the server
+    sendGameState();
+  }
+
+  ////////////////////////////////copy end here //////////////////////////
 
     drawMaze(maze);
     gameLoop();
